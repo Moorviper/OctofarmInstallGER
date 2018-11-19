@@ -1,0 +1,165 @@
+% arara: lualatex: { shell: yes, action: nonstopmode, synctex: yes}
+% arara: lualatex: { shell: yes, action: nonstopmode, synctex: yes}
+% asarara: lualatex: { shell: yes, action: nonstopmode, synctex: yes,  options: "-output-directory=_build"}
+% asarara: lualatex: { shell: yes, action: nonstopmode, synctex: yes,  options: "-output-directory=_build"}
+\documentclass{article}
+\usepackage[ngerman]{babel}
+\usepackage[no-math]{fontspec}
+
+\usepackage{mwe}
+\usepackage{luacode}
+\usepackage{shellesc}
+% \documentclassw[11pt, a4paper,ngerman]{article}
+\usepackage{basicff}
+
+\usetikzlibrary{patterns} % preamble
+\tcbuselibrary{skins} % preamble
+
+\usepackage{tikz}
+% \usepackage{PTSansNarrow}
+\usetikzlibrary{matrix}
+
+\usepackage{pgfplots}
+\pgfplotsset{
+ compat=newest
+  }
+\tcbset{colframe=red!75!black}
+\newenvironment{proggen}{\begin{center}}{\end{center}}
+
+\usepackage{array}
+% \setmainfont[Path=/Applications/Microsoft Word.app/Contents/Resources/Fonts/]{Calibri.ttf}
+% \setsansfont[Path=/Applications/Microsoft Word.app/Contents/Resources/Fonts/]{Calibri.ttf}
+% \setmonofont[Path=/Applications/Microsoft Word.app/Contents/Resources/Fonts/]{Calibri.ttf}
+
+
+\setmainfont{UbuntuL.ttf}
+\setsansfont{UbuntuR.ttf}
+\setmonofont{UbuntuMonoR.ttf}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+
+\oddsidemargin-10mm
+\title{
+\color{white}
+ $\bullet$ \\ $\bullet$ \\ $\bullet$ \\
+ \color{black}
+ % \color{white}
+ % $\bullet$ \\
+ \color{black}
+Installation \\
+von \\
+Octofarm / printerview
+\color{white}
+$\bullet$ \\
+\color{black}
+ \begin{center}
+	\includegraphics[scale=0.5]{./pictures/octofarm.pdf}
+\end{center}
+}
+% \includegraphics{./pictures/asrock.png} Q1900M \\ \color{white} $\bullet$ \\ $\bullet$ \\ $\bullet$ \\ \color{black} \\ \apple \\ 10.10.3
+
+\author{Daniel Krah}
+% \date{1.6.2015}
+
+\begin{document}
+% \AddToShipoutPicture{\BackgroundPic}
+\maketitle%
+\newpage%
+ \tableofcontents%
+% \newpage
+%==================================================================================
+% \begin{center}
+% \textbf{Vorwort}
+% \end{center}
+
+\AddToShipoutPicture{\BackgroundPic}
+\newpage
+\section{Überblick}
+\input{kap0.tex}
+
+
+%=========================================================================================================================
+%
+%-------------END
+\end{document}
+
+
+
+
+
+%
+% \input{hardware.tex}
+
+
+
+
+
+
+
+%  To Do
+% \input{todo.tex}
+% \begin{displaymath}
+%   E = \frac{m_{0} c^{2}}{\sqrt{1-v^{2}/c^{2}}}
+% \end{displaymath}
+
+% \begin{luacode}
+%   for x=1,600 do
+%     tex.print(x+2)
+%   end
+% \end{luacode}
+
+% \input{kap1.tex}
+
+
+
+
+
+
+
+% \begin{Verbatim}[frame=lines,
+%        framerule=0.2mm,framesep=3mm,
+%        rulecolor=\color{monoorange},
+%        fillcolor=\color{monogreen},
+%        label=Kapitel 1,labelposition=topline]
+%   Name    :   Cubieboard 2
+%   Size    :   10 cm x 6 cm
+%   CPU     :   Allwinner A20 SoC (2 ARM-Cortex A7-Cores with 1 GHz)
+%   GPU     :   Mali-400MP2 (OpenGL ES 2.0/1.1)
+%   VPU     :   CedarX (max 2160p (Ultra HD))
+%   RAM     :   512MB (Test) / 1GB (Produktion) DDR3
+%   CONN    :   2x USB Host, 1x USB On-the-go, 1x CIR, 1x SATA
+%   VID-OUT :   HDMI @ 1080p
+%   AUD-OUT :   S/PDIF, Headphone, HDMI-Audio
+%   AUD-IN  :   Mikrophone, Line-In
+%   Storage :   4 GB NAND-Flash, 1x MicroSD
+%   Network :   10/100-Ethernet
+%   DB-Con. :   96 Pin incl IÂ²C, SPI, LVDS
+% \end{Verbatim}
+
+
+
+
+
+
+
+
+% z23dsdsdsdsd
+% \color{red}
+% \shiftkey
+% \capslockkey
+% \ejectkey
+% \pencilkey
+% \returnkey
+% \revreturnkey
+% \cubie
+% \cubiebig
+% \archlinux \\
+
+% \subsection{Notes}
+% \infobox{Notes}{
+% $\ $\\
+%  \centering
+% vdpau-sunxi is still in development. \\
+% $\ $\\
+% $\ $\\
+% }{$\ $}
