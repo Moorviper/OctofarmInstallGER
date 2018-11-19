@@ -1,0 +1,200 @@
+
+% \begin{framed}
+%   init
+% \end{framed}
+Ziel dieser Anleitung ist die Installation einer kleinen Octoprint Farm auf Ubuntu MATE.
+
+Das Grundkonzept besteht daraus nur einen Rechner für alle 3D Drucker zu haben. So hängen alle Webcams und 3D Drucker an einem PC. Die 3D Drucker sind an einem aktiven USB Hub angeschlossen um den PC zu schützen (Man weis ja nie ...). Für jeden 3D Drucker wird eine eigene Octoprint Instanz gestartet welche wie auch die dazugehörige mjpeg-streamer Instanz an eine eigene IP gebunden wird. Dadurch kann man einheitlich die gleichen Ports nehmen. Die IP's beginnen bei 100 und sind somit oberhalb meines DHCP-Bereiches. Auf der ersten läuft ein caddyserver(printrun)/ später ein nodejs server mit octofarm über welche man eine Übersicht über die Octoprint Instanzen bekommt.
+
+
+\newcommand{\hwspace}{
+  -0,25cm
+}
+\subsection{Verwendete Hardware}
+
+\vspace{\hwspace}
+\begin{Verbatim}[frame=lines,
+       framerule=0.2mm,framesep=3mm,
+       rulecolor=\color{monoorange},
+       fillcolor=\color{monogreen},
+       label=Computer,labelposition=topline]
+  Mainboard  :   ASRock Q1900m
+  CPU        :   Intel® Quad-Core Processor J1900 (2/2,42 GHz)
+  GPU        :   Intel® HD-Grafik für Intel Atom® Prozessoren der Z3700-Reihe
+  RAM        :   4GB DDR3
+  Anschlüsse :   3x USB intern, 2x USB 2.0 extern, 1x USB 3.0 extern 2 x SATA2 3.0
+  Speicher   :   160 GB HDD zum Entwickeln / 16 GB USB 3.0 Stick für den Dauerbetrieb
+  Netzwerk   :   1000m Ethernet
+\end{Verbatim}
+\vspace{\hwspace}
+\begin{Verbatim}[frame=lines,
+       framerule=0.2mm,framesep=3mm,
+       rulecolor=\color{monoorange},
+       fillcolor=\color{monogreen},
+       label=Kameras,labelposition=topline]
+  Logitech      :   C270 (USB)
+                    C310 (USB)
+  mjpg-streamer :   input_testpicture (2x)
+\end{Verbatim}
+\vspace{\hwspace}
+\begin{Verbatim}[frame=lines,
+       framerule=0.2mm,framesep=3mm,
+       rulecolor=\color{monoorange},
+       fillcolor=\color{monogreen},
+       label=3D Drucker,labelposition=topline]
+  Prusa i3 mk2 clone   : MKS gen 1.4, E3D V6 (clone), MK42 (Prusa), original Pinda probe,
+                         Display
+  Prusa i3 mk2.x clone : MKS gen 1.4, E3D V6 (clone) an Titan Extruder,
+                         MK42 (Orballo Printing modded to 24V), Induktiver Sensor, Display
+  Software             : Prusa Firmware 3.10
+\end{Verbatim}
+\vspace{\hwspace}
+\begin{Verbatim}[frame=lines,
+       framerule=0.2mm,framesep=3mm,
+       rulecolor=\color{monoorange},
+       fillcolor=\color{monogreen},
+       label=Verschiedenes,labelposition=topline]
+  Netzteil : Pico PSU Clone 60w
+  USB-Hub  : aktiver 7 Port USB-Hub
+\end{Verbatim}
+\vspace{\hwspace}
+\begin{Verbatim}[frame=lines,
+       framerule=0.2mm,framesep=3mm,
+       rulecolor=\color{monoorange},
+       fillcolor=\color{monogreen},
+       label=Netzwerk,labelposition=topline]
+  Router : Fritzbox 7490 mit T-DSL 16.000/2.500 (DualStack)
+           IP-Adresse:
+           192.168.178.1
+  Q1900m : IP-Adressen:
+           192.168.178.40  - (statisches DHCP - für Internetzgriff)
+           192.168.178.100 - Caddyserver (Printview / später Octofarm)
+           192.168.178.101 - Octoprint 1.3.9, Prusa i3 mk2 clone, C310
+           192.168.178.102 - Octoprint 1.3.9, Prusa i3 mk2.x clone, C270
+           192.168.178.103 - Octoprint 1.3.9, virtual Printer, input_testpicture
+           192.168.178.104 - Octoprint 1.3.9, virtual Printer, input_testpicture
+\end{Verbatim}
+
+\newpage
+
+\section{Software Installation}
+
+Vorraussetzung ist eine Installation von Ubuntu Mate. \\
+(Jede andere Ubuntu-Version sollte ebenfalls gehen ...)
+
+\subsection{Update des Grundsystems und installieren des Openssh-Servers}
+\monocodebox{sh}{Update der Paketliste und anschließendes Update der jeweiligen Pakete + Installation von Openssh-Server}{./code/apt.sh}{false}{0}{3}
+%
+% \clearpage
+\subsection{Netzwerk-Konfiguration}
+\subsubsection{Festlegen der IP-Adressen}
+In der Konfigurationsdatei sollte sich ein ähnlicher Inhalt befinden.
+\monocodebox{sh}{/etc/network/interfaces}{./code/network.sh}{true}{4}{6}
+
+Man öffnet die Datei in einem Editor und fügt 5 IP-Adressen in einem nicht vom DHCP-Server verwalteten Bereich ein. \\
+
+Die erste IP für die Übersichtsseite, die restlichen für die jeweiligen Octoprint-Instanzen.
+\monocodebox{sh}{Festlegen der IP Adressen}{./code/network.sh}{true}{7}{17}
+
+% \clearpage
+\newpage
+\subsubsection{Überprüfen der IP-Adressen}
+
+Überprüfen kann man die IP-Adressen mit:
+\monocodebox{sh}{Überprüfen der IP Adressen}{./code/network.sh}{true}{20}{50}
+
+Beim zweiten Gerät sieht man nun 6 IP-Adressen. Die erste ist in diesem Fall die von der Fritzbox zugewiesene IP-Adresse.
+
+\newpage
+\subsection{Installation benötigter Pakete für (Octoprint, mjpegstreamer, ...)}
+Wir installieren alle benötigten Pakete in einem Rutsch :
+\monocodebox{sh}{Installieren benötigter Pakete}{./code/apt.sh}{true}{6}{6}
+
+\subsection{Klonen der jeweiligen Repositories von Octoprint, mjpegstreamer, ...}
+
+\monocodebox{sh}{Wechseln in das Home-Verzeichnis}{./code/soft.sh}{true}{0}{6}
+
+\monocodebox{sh}{Klonen der Repositories}{./code/soft.sh}{true}{8}{16}
+
+\subsection{Installation von Octoprint}
+
+Die Installation von Octoprint ist schnell erledigt das Einrichten kommt später ...
+\monocodebox{sh}{Installation von Octoprint}{./code/soft.sh}{true}{18}{22}
+
+\subsection{Installation von mjpg-streamer}
+
+Nun folgt die installation von mjpg-streamer welcher den Streaming-Server für die Webcams darstellt. \\
+
+\monocodebox{sh}{Installation von mjpg-streamer}{./code/soft.sh}{true}{27}{31}
+
+\subsubsection{Übersetzen des input$\_$testpicture Plugins}
+
+Dieser Schritt ist prinzipiell Optional, kann sich aber später bei der Nutzung von Octofarm lohnen ;-)
+
+\monocodebox{sh}{Übersetzen des input$\_$testpicture Plugins}{./code/soft.sh}{true}{40}{44}
+
+Ich kopiere das übersetzte Plugin in die 2 Ordner da ich mir nicht sicher bin wo es hingehört. Normal sollte: ~/mjpg-streamer/mjpg-streamer-experimental/plugins/ passen aber dunkel erinnere ich mich das es Probleme gab. Also frei nach der Devise doppelt hält besser an beide Orte kopiert und so groß ist es ja nicht ...
+
+\subsection{Erstellen der UDEV-Regeln für die Webcams}
+\subsubsection{Ermitteln der nötigen Werte}
+Damit die Zuordnungen der Kameras zu den jeweiligen Druckern auch nach einem Neustart oder versehentlichen Abstecken noch stimmt müssen UDEV-Regeln erstellt werden. \\
+
+Dazu benötigt man die jeweiligen Produkt und Device ID's welche im Format  ID XXXX:XXXX angegeben werden. \\
+
+In meinem Fall verwende ich 2 Logitech USB-Kameras (C270 und C310). \\
+
+Die dazugehörigen Werte sind:
+\begin{itemize}
+  \item 046d:081b $\Rightarrow$ C310
+  \item 046d:0825 $\Rightarrow$ C270
+\end{itemize}
+
+\newpage
+Zu diesen Werten kommt man in dem man die Vendor- und Device-Id von lsusb entnimmt. \\
+
+\monocodebox{sh}{Ausgabe von lsusb}{./code/soft.sh}{true}{48}{89}
+
+\newpage
+\subsubsection{Erstellen einer neuen UDEV-Regel Datei für die Webcams}
+\vspace{0.3cm}
+\monocodebox{sh}{Erstellen einer neuen Udev-Regel-Datei als root mit sudo}{./code/soft.sh}{true}{92}{92}
+
+Als Inhalt fügt man auf Grund der ermittelten Daten folgenden Inhalt ein ... \\
+
+\monocodebox{sh}{Erstellen einer neuen Udev-Regel-Datei als root mit sudo}{./code/soft.sh}{true}{94}{95}
+\begin{itemize}
+  \item SUBSYSTEMS=="{}usb",
+    \begin{itemize}
+      \item Subsystem USB da die Kameras USB Kameras sind.
+    \end{itemize}
+  \item ATTR{idVendor}=="046d",
+    \begin{itemize}
+      \item Ist bei beiden Kameras Identisch 046d da Logitech
+    \end{itemize}
+  \item ATTR{idProduct}=="081b" / ATTR{idProduct}=="0825",
+  \begin{itemize}
+    \item 081b und 0825 für C310 und C270
+  \end{itemize}
+  \item ATTRS{serial}=="4B8254A0" und ATTRS{serial}=="AF1943F0",
+  \begin{itemize}
+    \item Die Angabe der Seriennummer ist nur notwendig wenn 2 Kameras des selben Modell verwendet werden. \\ In meinem Fall wäre dies nicht Notwendig, aber ich trage Sie trotzdem mit ein falls mal eine weitere Kamera hinzukommen würde.
+  \end{itemize}
+  \item SYMLINK+="logitechC270dollyMK2" und SYMLINK+="logitechC310dollyMK3"
+  \begin{itemize}
+    \item Den Namen vom Symlink kann man frei wählen. \\In meinem Fall verwende ich das Schema Hersteller + Modell + Druckername \\ In meinem Fall 2 Prusa Klone
+  \end{itemize}
+\end{itemize}
+
+\subsubsection{Übernehmen der neuen UDEV-Regeln ohne Neustart}
+Wenn man die Regel ohne Neustart anwenden will kann man das mit folgndem Befehl tun.
+\monocodebox{sh}{UDEV Regeln aktualisieren}{./code/soft.sh}{true}{97}{97}
+
+\newpage
+\subsubsection{Überprüfen der neuen UDEV-Regeln}
+\vspace{0.3cm}
+\monocodebox{sh}{UDEV Regeln aktualisieren}{./code/soft.sh}{true}{99}{102}
+"{}logit"{} ist ein Teil des Symlinks und da beides Logitech Kameras sind und die Namen dem entsprechend gewählt wurden werden beide ausgegeben.
+
+
+\subsection{Installation des Caddy-Servers}
+\monocodebox{sh}{Caddy Server installieren}{./code/caddy.sh}{true}{0}{102}
